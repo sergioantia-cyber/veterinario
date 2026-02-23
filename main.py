@@ -7,6 +7,14 @@ from sheets_manager import registrar_consulta_en_sheet, get_inventario, agregar_
 
 app = Flask(__name__, template_folder='templates')
 
+# Carga de variables de entorno (Local solamente)
+if os.path.exists('.env'):
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+    except ImportError:
+        pass
+
 def get_drive_direct_url(url):
     """Convierte URL de vista de Drive a descarga directa"""
     if "drive.google.com" in url:
