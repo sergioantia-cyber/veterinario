@@ -1,0 +1,6 @@
+.env
+credentials.json
+__pycache__/
+temp_uploads/
+*.pyc
+.vercel

@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario Veterinario | Vitness</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #10b981;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --radius: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), #a855f7);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            border: 1px solid var(--border);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .inventory-form {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 15px;
+            align-items: end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-light);
+            padding-left: 5px;
+        }
+
+        input {
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 2px solid var(--border);
+            outline: none;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        button:hover {
+            background: var(--primary-dark);
+            transform: scale(1.02);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .inventory-list {
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 16px;
+            border-bottom: 2px solid var(--border);
+            color: var(--text-light);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 1rem;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .stock-badge {
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .stock-high {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .stock-low {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .stock-mid {
+            background: #fef9c3;
+            color: #854d0e;
+        }
+
+        .loader {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-icon {
+            padding: 8px;
+            border-radius: 8px;
+            background: #f1f5f9;
+            color: var(--text-light);
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-icon:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Notifications */
+        #notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            transform: translateY(100px);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        #notification.show {
+            transform: translateY(0);
+        }
+
+        .success {
+            background: var(--secondary);
+        }
+
+        .error {
+            background: #ef4444;
+        }
+
+        @media (max-width: 768px) {
+            .inventory-form {
+                grid-template-columns: 1fr;
+            }
+
+            header {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .modal {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .modal h3 {
+            margin-bottom: 15px;
+            color: #ef4444;
+        }
+
+        .modal p {
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+
+        .pin-input {
+            width: 150px;
+            text-align: center;
+            font-size: 1.5rem;
+            letter-spacing: 0.5rem;
+            margin-bottom: 20px;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: var(--text);
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-box-open"></i> Inventario Veterinario</h1>
+            <div class="flex flex-col items-end gap-2">
+                <a href="/"
+                    style="text-decoration: none; color: var(--text-light); font-weight: 600; font-size: 0.9rem;">
+                    <i class="fas fa-arrow-left"></i> Volver al Panel
+                </a>
+                <a href="https://docs.google.com/spreadsheets/d/1EO6wYa36akAdUJW5KDs_lljC0qPRC-bsaHXPqfRnWYU/edit"
+                    target="_blank"
+                    style="text-decoration: none; color: #10b981; font-weight: 700; font-size: 0.9rem; background: #dcfce7; padding: 6px 14px; border-radius: 999px; transition: all 0.2s;">
+                    <i class="fas fa-file-excel"></i> Abrir Google Sheets
+                </a>
+            </div>
+        </header>
+
+        <section class="card">
+            <h2 style="margin-bottom: 20px;">Agregar / Actualizar Stock</h2>
+            <form id="inventoryForm" class="inventory-form">
+                <div class="form-group">
+                    <label for="nombre">Nombre del Producto</label>
+                    <input type="text" id="nombre" placeholder="Ej: Amoxicilina 500mg" required>
+                </div>
+                <div class="form-group">
+                    <label for="cantidad">Cantidad</label>
+                    <input type="number" id="cantidad" placeholder="0" required min="1">
+                </div>
+                <div class="form-group">
+                    <label for="precio">Precio Unitario ($)</label>
+                    <input type="number" id="precio" placeholder="0.00" step="0.01">
+                </div>
+                <button type="submit" id="submitBtn">
+                    <span class="btn-text">Guardar</span>
+                    <div class="loader" id="loader"></div>
+                </button>
+            </form>
+        </section>
+
+        <section class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>Productos en Stock</h2>
+                <div class="actions">
+                    <button onclick="confirmClearAll()" class="btn-secondary"
+                        style="color: #ef4444; border: 1px solid #fee2e2; font-size: 0.8rem; padding: 8px 12px;">
+                        <i class="fas fa-trash-sweep"></i> Vaciar Todo
+                    </button>
+                    <button onclick="fetchInventory()" class="btn-icon" title="Refrescar">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="inventory-list">
+                <table id="inventoryTable">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Stock Actual</th>
+                            <th>Precio</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryBody">
+                        <!-- Se llena con JS -->
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: var(--text-light); padding: 40px;">
+                                <i class="fas fa-spinner fa-spin"></i> Cargando inventario...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    </div>
+
+    <!-- Modal de Confirmación -->
+    <div id="deleteModal" class="modal-overlay">
+        <div class="modal">
+            <h3><i class="fas fa-exclamation-triangle"></i> ¿Eliminar Producto?</h3>
+            <p id="deletePromptText">Para confirmar la eliminación de "Producto", ingresa el código de seguridad.</p>
+            <input type="password" id="pinInput" class="pin-input" maxlength="4" placeholder="••••">
+            <div class="modal-actions">
+                <button onclick="closeModal()" class="btn-secondary">Cancelar</button>
+                <button onclick="executeDelete()" class="btn-danger">Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification"></div>
+
+    <script>
+        async function fetchInventory() {
+            try {
+                const response = await fetch('/api/inventory');
+                const data = await response.json();
+                renderInventory(data);
+            } catch (error) {
+                showNotification('Error al cargar inventario', 'error');
+            }
+        }
+
+        function renderInventory(items) {
+            const tbody = document.getElementById('inventoryBody');
+            if (!items || items.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px;">No hay productos registrados</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = '';
+            items.forEach(item => {
+                const row = document.createElement('tr');
+
+                // --- DETECCIÓN ROBUSTA DE LLAVES ---
+                const keys = Object.keys(item);
+                const findValue = (possibles) => {
+                    const foundKey = keys.find(k => possibles.some(p => k.toLowerCase().trim() === p.toLowerCase()));
+                    return foundKey ? item[foundKey] : null;
+                };
+
+                // Fallback a detección por inclusión parcial si el match exacto falla
+                const findValuePartial = (possibles) => {
+                    const foundKey = keys.find(k => possibles.some(p => k.toLowerCase().includes(p.toLowerCase())));
+                    return foundKey ? item[foundKey] : null;
+                };
+
+                let nombre = findValue(['nombre', 'medicamento', 'producto', 'item', 'name']) ||
+                    findValuePartial(['nombre', 'medicamento', 'producto', 'item']) ||
+                    Object.values(item)[0] || 'S/N';
+
+                let stockVal = findValue(['stock', 'existencias', 'cantidad', 'cant']) ||
+                    findValuePartial(['stock', 'existencias', 'cantidad']) ||
+                    Object.values(item)[1] || 0;
+
+                const stock = parseInt(stockVal);
+
+                const precio = findValue(['precio', 'costo', 'valor', 'price']) ||
+                    findValuePartial(['precio', 'costo', 'valor']) ||
+                    Object.values(item)[2] || '0.00';
+
+                let statusClass = 'stock-high';
+                let statusText = 'Suficiente';
+                if (stock <= 5) {
+                    statusClass = 'stock-low';
+                    statusText = 'Agotándose';
+                } else if (stock <= 15) {
+                    statusClass = 'stock-mid';
+                    statusText = 'Bajo';
+                }
+
+                row.innerHTML = `
+                    <td><strong>${nombre}</strong></td>
+                    <td>${stock} unidades</td>
+                    <td>$${precio}</td>
+                    <td><span class="stock-badge ${statusClass}">${statusText}</span></td>
+                    <td class="actions">
+                        <button class="btn-icon" onclick="editItem('${String(nombre).replace(/'/g, "\\'")}', ${precio})" title="Editar"><i class="fas fa-edit"></i></button>
+                        <button class="btn-icon" style="color: #ef4444;" onclick="confirmDelete('${String(nombre).replace(/'/g, "\\'")}')" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function editItem(nombre, precio) {
+            document.getElementById('nombre').value = nombre;
+            document.getElementById('precio').value = precio;
+            document.getElementById('cantidad').focus();
+        }
+
+        document.getElementById('inventoryForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const loader = document.getElementById('loader');
+            const btnText = btn.querySelector('.btn-text');
+
+            const data = {
+                nombre: document.getElementById('nombre').value,
+                cantidad: document.getElementById('cantidad').value,
+                precio: document.getElementById('precio').value
+            };
+
+            // UI state
+            btn.disabled = true;
+            btnText.style.display = 'none';
+            loader.style.display = 'block';
+
+            try {
+                const response = await fetch('/api/inventory', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                if (result.status === 'success') {
+                    showNotification(result.message, 'success');
+                    document.getElementById('inventoryForm').reset();
+                    fetchInventory();
+                } else {
+                    showNotification(result.message, 'error');
+                }
+            } catch (error) {
+                showNotification('Error de conexión', 'error');
+            } finally {
+                btn.disabled = false;
+                btnText.style.display = 'block';
+                loader.style.display = 'none';
+            }
+        });
+
+        function showNotification(message, type) {
+            const notif = document.getElementById('notification');
+            notif.innerText = message;
+            notif.className = type;
+            notif.classList.add('show');
+            setTimeout(() => notif.classList.remove('show'), 3000);
+        }
+
+        let itemToDelete = null;
+        let mode = 'single'; // 'single' o 'all'
+
+        function confirmDelete(nombre) {
+            itemToDelete = nombre;
+            mode = 'single';
+            document.getElementById('deletePromptText').innerText = `Ingresa el código para eliminar "${nombre}"`;
+            document.getElementById('deleteModal').style.display = 'flex';
+            document.getElementById('pinInput').value = '';
+            document.getElementById('pinInput').focus();
+        }
+
+        function confirmClearAll() {
+            mode = 'all';
+            document.getElementById('deletePromptText').innerText = "¿ESTÁS SEGURO? Esto eliminará TODO el inventario. Ingresa el código.";
+            document.getElementById('deleteModal').style.display = 'flex';
+            document.getElementById('pinInput').value = '';
+            document.getElementById('pinInput').focus();
+        }
+
+        function closeModal() {
+            document.getElementById('deleteModal').style.display = 'none';
+            itemToDelete = null;
+        }
+
+        async function executeDelete() {
+            const pin = document.getElementById('pinInput').value;
+            if (pin !== '0424') {
+                showNotification('PIN incorrecto', 'error');
+                return;
+            }
+
+            const endpoint = mode === 'single' ? '/api/inventory/delete' : '/api/inventory/clear';
+            const body = mode === 'single' ? { nombre: itemToDelete, pin: pin } : { pin: pin };
+
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+
+                const result = await response.json();
+                if (result.status === 'success') {
+                    showNotification(result.message, 'success');
+                    closeModal();
+                    fetchInventory();
+                } else {
+                    showNotification(result.message, 'error');
+                }
+            } catch (error) {
+                showNotification('Error de conexión', 'error');
+            }
+        }
+
+        // Initial load
+        window.onload = fetchInventory;
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vet Assistant - Panel de Control</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .animate-pulse-slow {
+            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: .5;
+            }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div class="glass-panel w-full max-w-2xl rounded-2xl p-8 relative overflow-hidden">
+
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Vet Assistant 🐾</h1>
+                <p class="text-gray-500 mt-1">Sube el audio de tu consulta para procesarla con IA.</p>
+            </div>
+            <div class="flex flex-col items-end gap-2">
+                <div
+                    class="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold text-xl">
+                    VA
+                </div>
+                <a href="/inventory"
+                    class="text-blue-600 font-semibold hover:underline flex items-center gap-1 text-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4">
+                        </path>
+                    </svg>
+                    Inventario
+                </a>
+            </div>
+        </div>
+
+        <!-- Formulario -->
+        <div id="uploadForm" class="space-y-6">
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nombre del Paciente</label>
+                    <input type="text" id="pacienteName" placeholder="Ej: Firulais"
+                        class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                        value="Firulais">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">ID Dueño</label>
+                    <input type="text" id="duenoId" placeholder="Ej: 12345"
+                        class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                        value="Test-Web">
+                </div>
+            </div>
+
+            <div class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:bg-gray-50 transition-colors cursor-pointer relative"
+                onclick="document.getElementById('audioInput').click()">
+                <input type="file" id="audioInput" accept="audio/*" class="hidden" onchange="handleFileSelect(this)">
+                <div id="dropZoneContent">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48"
+                        aria-hidden="true">
+                        <path
+                            d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    <p class="mt-2 text-sm text-gray-600 font-medium">Haz click para subir el audio</p>
+                    <p class="text-xs text-gray-500">MP3, WAV, M4A hasta 10MB</p>
+                </div>
+                <div id="fileSelectedContent" class="hidden">
+                    <div class="flex items-center justify-center space-x-2 text-green-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span class="font-medium" id="fileNameDisplay">audio.mp3</span>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="uploadAudio()" id="submitBtn"
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed">
+                Procesar Consulta
+            </button>
+        </div>
+
+        <!-- Estado de Carga -->
+        <div id="loadingState" class="hidden py-8 text-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <h3 class="text-lg font-medium text-gray-900">Analizando consulta...</h3>
+            <p class="text-gray-500 text-sm mt-2">1. Transcribiendo audio (Whisper)</p>
+            <p class="text-gray-500 text-sm">2. Extrayendo datos clínicos (Gemini)</p>
+            <p class="text-gray-500 text-sm">3. Guardando en Google Sheets</p>
+        </div>
+
+        <!-- Resultados -->
+        <div id="resultState" class="hidden space-y-6 mt-8">
+            <div class="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center text-green-700">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                Consulta guardada exitosamente en Sheets!
+            </div>
+
+            <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Resumen Generado</h3>
+                <div class="space-y-4">
+                    <div>
+                        <span class="text-xs text-gray-500 uppercase">Diagnóstico Presuntivo</span>
+                        <p class="text-lg font-medium text-gray-900" id="resDiagnostico">...</p>
+                    </div>
+                    <div>
+                        <span class="text-xs text-gray-500 uppercase">Tratamiento</span>
+                        <ul class="list-disc pl-5 text-gray-700" id="resTratamiento">
+                            <!-- Items -->
+                        </ul>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <span class="text-xs text-gray-500 uppercase">Costo Estimado</span>
+                            <p class="text-xl font-bold text-green-600" id="resCosto">$0.00</p>
+                        </div>
+                        <div>
+                            <span class="text-xs text-gray-500 uppercase">Próxima Cita</span>
+                            <p class="text-gray-700" id="resCita">Unknown</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="copyToClipboard()"
+                    class="flex items-center justify-center gap-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-medium py-3 px-4 rounded-xl transition-all shadow-sm">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3">
+                        </path>
+                    </svg>
+                    Copiar
+                </button>
+                <button onclick="shareWhatsApp()"
+                    class="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-4 rounded-xl transition-all shadow-sm">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                    </svg>
+                    WhatsApp
+                </button>
+            </div>
+
+            <button onclick="location.reload()"
+                class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-4 rounded-xl transition-colors">
+                Nueva Consulta
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        function handleFileSelect(input) {
+            if (input.files && input.files[0]) {
+                document.getElementById('dropZoneContent').classList.add('hidden');
+                document.getElementById('fileSelectedContent').classList.remove('hidden');
+                document.getElementById('fileNameDisplay').textContent = input.files[0].name;
+            }
+        }
+
+        async function uploadAudio() {
+            const fileInput = document.getElementById('audioInput');
+            if (!fileInput.files[0]) {
+                alert('Por favor selecciona un archivo de audio primero');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('audio', fileInput.files[0]);
+            formData.append('paciente', document.getElementById('pacienteName').value);
+            formData.append('dueno_id', document.getElementById('duenoId').value);
+
+            // UI Changes
+            document.getElementById('uploadForm').classList.add('hidden');
+            document.getElementById('loadingState').classList.remove('hidden');
+
+            try {
+                const response = await fetch('/upload_audio', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showResults(result.data);
+                } else {
+                    alert('Error: ' + (result.error || 'Unknown error'));
+                    location.reload();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error de conexión con el servidor');
+                location.reload();
+            }
+        }
+
+        function showResults(data) {
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('resultState').classList.remove('hidden');
+
+            document.getElementById('resDiagnostico').textContent = data.diagnostico_presuntivo || 'No detectado';
+            document.getElementById('resCosto').textContent = '$' + (data.costos_estimados?.total || 0);
+            document.getElementById('resCita').textContent = data.proxima_cita || 'N/A';
+
+            const list = document.getElementById('resTratamiento');
+            list.innerHTML = '';
+            if (data.tratamiento && data.tratamiento.length > 0) {
+                data.tratamiento.forEach(med => {
+                    const li = document.createElement('li');
+                    li.textContent = `${med.medicamento} - ${med.dosis}`;
+                    list.appendChild(li);
+                });
+            } else {
+                list.innerHTML = '<li class="text-gray-400 italic">No se recetaron medicamentos</li>';
+            }
+        }
+
+        function getSummaryText() {
+            const diag = document.getElementById('resDiagnostico').textContent;
+            const tratamiento = Array.from(document.querySelectorAll('#resTratamiento li'))
+                .map(li => "• " + li.textContent).join('\n');
+            const costo = document.getElementById('resCosto').textContent;
+            const cita = document.getElementById('resCita').textContent;
+            const paciente = document.getElementById('pacienteName').value;
+
+            return `🐾 *Resumen Veterinario - ${paciente}*\n\n` +
+                `🩺 *Diagnóstico:* ${diag}\n\n` +
+                `💊 *Tratamiento:*\n${tratamiento}\n\n` +
+                `💰 *Costo:* ${costo}\n` +
+                `📅 *Próxima Cita:* ${cita}\n\n` +
+                `_Generado por Vet Assistant_`;
+        }
+
+        async function copyToClipboard() {
+            const text = getSummaryText();
+            try {
+                await navigator.clipboard.writeText(text);
+                alert('Resumen copiado al portapapeles');
+            } catch (err) {
+                console.error('Error al copiar:', err);
+                alert('No se pudo copiar el texto');
+            }
+        }
+
+        function shareWhatsApp() {
+            const text = encodeURIComponent(getSummaryText());
+            window.open(`https://wa.me/?text=${text}`, '_blank');
+        }
+    </script>
+</body>
+
+</html>

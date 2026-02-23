@@ -1,0 +1,12 @@
+openai
+google-generativeai
+Flask
+requests
+python-dotenv
+aiohttp
+twilio
+python-Levenshtein
+thefuzz
+gspread
+oauth2client
+flask-cors
