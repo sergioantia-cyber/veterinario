@@ -3,7 +3,6 @@ google-generativeai
 Flask
 requests
 python-dotenv
-aiohttp
 twilio
 python-Levenshtein
 thefuzz

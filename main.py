@@ -2,7 +2,6 @@ from flask import Flask, request, jsonify, render_template
 import os
 import requests
 import re
-from aiohttp import FormData
 from ai_engine import transcribir_audio, analizar_consulta
 from sheets_manager import registrar_consulta_en_sheet, get_inventario, agregar_item_inventario, eliminar_item_inventario, vaciar_inventario
 
