@@ -3,8 +3,6 @@ google-generativeai
 Flask
 requests
 python-dotenv
-twilio
-python-Levenshtein
 thefuzz
 gspread
 oauth2client
