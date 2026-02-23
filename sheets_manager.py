@@ -14,13 +14,28 @@ CREDS_FILE = 'credentials.json'
 
 def get_client():
     """Conecta con Google Sheets usando las credenciales."""
+    import os
+    
+    # 1. Intentar desde variable de entorno (Para Vercel)
+    creds_json = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON")
+    if creds_json:
+        try:
+            creds_dict = json.loads(creds_json)
+            creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, SCOPE)
+            return gspread.authorize(creds)
+        except Exception as e:
+            print(f"❌ Error con la variable GOOGLE_SERVICE_ACCOUNT_JSON: {e}")
+
+    # 2. Intentar desde archivo local
     try:
-        creds = ServiceAccountCredentials.from_json_keyfile_name(CREDS_FILE, SCOPE)
-        client = gspread.authorize(creds)
-        return client
+        if os.path.exists(CREDS_FILE):
+            creds = ServiceAccountCredentials.from_json_keyfile_name(CREDS_FILE, SCOPE)
+            client = gspread.authorize(creds)
+            return client
     except Exception as e:
         print(f"❌ Error conectando a Google Sheets: {e}")
-        return None
+    
+    return None
 
 def registrar_consulta_en_sheet(sheet_name, datos_paciente, datos_ai):
     """
