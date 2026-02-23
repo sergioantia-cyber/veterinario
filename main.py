@@ -25,10 +25,13 @@ def get_drive_direct_url(url):
             return f'https://drive.google.com/uc?export=download&id={file_id}'
     return url
 
-# Directorio temporal para audios
-UPLOAD_FOLDER = 'temp_uploads'
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
+# Directorio temporal para audios (Usa /tmp en Vercel por ser el único escribible)
+if os.environ.get('VERCEL'):
+    UPLOAD_FOLDER = '/tmp'
+else:
+    UPLOAD_FOLDER = 'temp_uploads'
+    if not os.path.exists(UPLOAD_FOLDER):
+        os.makedirs(UPLOAD_FOLDER)
 
 @app.route('/')
 def home():

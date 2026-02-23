@@ -13,7 +13,7 @@ if GOOGLE_API_KEY:
     # Limpieza agresiva de caracteres no deseados
     GOOGLE_API_KEY = "".join(c for c in GOOGLE_API_KEY if c.isalnum() or c in "-_")
     genai.configure(api_key=GOOGLE_API_KEY)
-else:
+elif not os.environ.get('VERCEL'):
     print("❌ ERROR: No se encontró GOOGLE_API_KEY en el archivo .env")
 
 def transcribir_audio(audio_path):
