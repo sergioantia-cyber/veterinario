@@ -3,7 +3,13 @@ from oauth2client.service_account import ServiceAccountCredentials
 import json
 from datetime import datetime
 import re
-from thefuzz import process, fuzz
+try:
+    from thefuzz import process, fuzz
+    FUZZY_AVAILABLE = True
+except ImportError:
+    FUZZY_AVAILABLE = False
+    print("⚠️ thefuzz no disponible, usando matching básico.")
+
 
 
 # Configuración de acceso a Google Sheets
@@ -308,18 +314,18 @@ def eliminar_item_inventario(sheet_name, nombre_item):
             print(f"🗑️ Item eliminado (Match Exacto): {nombres_inventario[idx]}")
             return True
 
-        # Si no hay match exacto, usar fuzzy
-        mejor_coincidencia, puntuacion = process.extractOne(nombre_item, nombres_inventario, scorer=fuzz.token_sort_ratio) if nombres_inventario else (None, 0)
+        # Si no hay match exacto, usar fuzzy si está disponible
+        if FUZZY_AVAILABLE and nombres_inventario:
+            mejor_coincidencia, puntuacion = process.extractOne(nombre_item, nombres_inventario, scorer=fuzz.token_sort_ratio)
+            if puntuacion >= 80:
+                idx = nombres_inventario.index(mejor_coincidencia)
+                row_idx = idx + 2
+                worksheet_inv.delete_rows(row_idx)
+                print(f"🗑️ Item eliminado (Fuzzy {puntuacion}%): {mejor_coincidencia}")
+                return True
         
-        if puntuacion >= 80:
-            idx = nombres_inventario.index(mejor_coincidencia)
-            row_idx = idx + 2 # +1 base 0, +1 header
-            worksheet_inv.delete_rows(row_idx)
-            print(f"🗑️ Item eliminado (Fuzzy {puntuacion}%): {mejor_coincidencia}")
-            return True
-        else:
-            print(f"⚠️ No se encontró una coincidencia clara para '{nombre_item}' (Puntaje: {puntuacion}).")
-            return False
+        print(f"⚠️ No se encontró una coincidencia clara para '{nombre_item}'.")
+        return False
             
     except Exception as e:
         print(f"❌ Error eliminando del inventario: {e}")
